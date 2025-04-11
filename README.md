@@ -1,0 +1,2 @@
+# blog
+personal hugo blog
