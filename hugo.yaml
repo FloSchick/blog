@@ -39,9 +39,6 @@ languages:
       series: series
     menu:
       main:
-        - name: Archive
-          url: archives/
-          weight: 5
         - name: Tags
           url: tags/
           weight: 10
