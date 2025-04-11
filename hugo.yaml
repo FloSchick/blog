@@ -45,3 +45,7 @@ languages:
         - name: Tags
           url: tags/
           weight: 10
+
+caches:
+  images:
+    dir: :cacheDir/images
