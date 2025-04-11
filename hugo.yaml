@@ -1,0 +1,47 @@
+baseURL: https://example.org/
+languageCode: en-us
+title: florianschick.com
+theme: ["PaperMod"]
+params:
+  ShowAllPagesInArchive: true
+  homeInfoParams:
+    Title: "👋 Hi, I´m Flo"
+    Content: >
+      I’m a **Platform Engineer** at a small **Bavarian** company.
+
+
+      This blog is my space to share what I **learn** while building and running **infrastructure**.
+
+
+      You’ll find posts about **Kubernetes**, **observability**, and **automating** the boring stuff.
+
+
+      **Writing helps me think** and maybe some of it helps you too.
+
+  socialIcons:
+    - name: github
+      title: View Source on Github
+      url: "https://github.com/FloSchick"
+    - name: linkedin
+      title: Connect on LinkedIn
+      url: "https://www.linkedin.com/in/florian-schick/"
+    - name: rss
+      title: Subscribe to RSS
+      url: "https://florianschick.com/index.xml"
+
+languages:
+  en:
+    languageName: "English"
+    weight: 1
+    taxonomies:
+      category: categories
+      tag: tags
+      series: series
+    menu:
+      main:
+        - name: Archive
+          url: archives
+          weight: 5
+        - name: Tags
+          url: tags/
+          weight: 10
