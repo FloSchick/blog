@@ -5,11 +5,16 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <meta name="robots" content="noindex, nofollow">
-<title>Tags | florianschick.com</title>
-<meta name="keywords" content="">
-<meta name="description" content="">
+<title>Demystifying Kubernetes Metrics | florianschick.com</title>
+<meta name="keywords" content="Metrics, Observability, Kubernetes">
+<meta name="description" content="Intro
+When setting up observability for Kubernetes, I kept running into the same question again and again:
+What metrics are actually available and where do they come from?
+This post is my attempt to document all default and optional metric sources in a Kubernetes cluster, grouped by system layer. Also i want to provide a brief overview of each metric type an endpoint exposes.
+Core Components Recap
+Before diving into metrics, here’s a quick reminder of some key Kubernetes components that either generate or expose metrics:">
 <meta name="author" content="">
-<link rel="canonical" href="http://localhost:1313/tags/">
+<link rel="canonical" href="http://localhost:1313/posts/k8smetrics/">
 <link crossorigin="anonymous" href="/assets/css/stylesheet.f49d66caae9ea0fd43f21f29e71a8d3e284517ed770f2aa86fa012953ad3c9ef.css" integrity="sha256-9J1myq6eoP1D8h8p5xqNPihFF&#43;13Dyqob6ASlTrTye8=" rel="preload stylesheet" as="style">
 <link rel="icon" href="http://localhost:1313/favicon.ico">
 <link rel="icon" type="image/png" sizes="16x16" href="http://localhost:1313/favicon-16x16.png">
@@ -18,8 +23,7 @@
 <link rel="mask-icon" href="http://localhost:1313/safari-pinned-tab.svg">
 <meta name="theme-color" content="#2e2e33">
 <meta name="msapplication-TileColor" content="#2e2e33">
-<link rel="alternate" type="application/rss+xml" href="http://localhost:1313/tags/index.xml">
-<link rel="alternate" hreflang="en" href="http://localhost:1313/tags/">
+<link rel="alternate" hreflang="en" href="http://localhost:1313/posts/k8smetrics/">
 <noscript>
     <style>
         #theme-toggle,
@@ -59,7 +63,7 @@
 </noscript>
 </head>
 
-<body class="list" id="top">
+<body class="" id="top">
 <script>
     if (localStorage.getItem("pref-theme") === "dark") {
         document.body.classList.add('dark');
@@ -101,28 +105,68 @@
         <ul id="menu">
             <li>
                 <a href="http://localhost:1313/tags/" title="Tags">
-                    <span class="active">Tags</span>
+                    <span>Tags</span>
                 </a>
             </li>
         </ul>
     </nav>
 </header>
 <main class="main">
-<header class="page-header">
-    <h1>Tags</h1>
-</header>
 
-<ul class="terms-tags">
-    <li>
-        <a href="http://localhost:1313/tags/kubernetes/">Kubernetes <sup><strong><sup>1</sup></strong></sup> </a>
-    </li>
-    <li>
-        <a href="http://localhost:1313/tags/metrics/">Metrics <sup><strong><sup>1</sup></strong></sup> </a>
-    </li>
-    <li>
-        <a href="http://localhost:1313/tags/observability/">Observability <sup><strong><sup>1</sup></strong></sup> </a>
-    </li>
+<article class="post-single">
+  <header class="post-header">
+    
+    <h1 class="post-title entry-hint-parent">
+      Demystifying Kubernetes Metrics
+    </h1>
+    <div class="post-meta"><span title='2025-03-10 00:00:00 +0000 UTC'>March 10, 2025</span>
+
+</div>
+  </header> 
+  <div class="post-content"><h3 id="intro">Intro<a hidden class="anchor" aria-hidden="true" href="#intro">#</a></h3>
+<p>When setting up observability for Kubernetes, I kept running into the same question again and again:</p>
+<p><strong>What metrics are actually available and where do they come from?</strong></p>
+<p>This post is my attempt to document all default and optional metric sources in a Kubernetes cluster, grouped by system layer. Also i want to provide a brief overview of each metric type an endpoint exposes.</p>
+<h3 id="core-components-recap">Core Components Recap<a hidden class="anchor" aria-hidden="true" href="#core-components-recap">#</a></h3>
+<p>Before diving into metrics, here’s a quick reminder of some key Kubernetes components that either generate or expose metrics:</p>
+<ul>
+<li>
+<p><strong>Kubelet</strong><br>
+Runs on every node. Manages pods and containers. Exposes various metrics including resource usage and probe status.</p>
+</li>
+<li>
+<p><strong>API Server</strong><br>
+Central access point for all Kubernetes operations. Tracks requests, authentication, and cluster object interactions.</p>
+</li>
+<li>
+<p><strong>Controller Manager</strong><br>
+Reconciles the desired and actual state of cluster resources like Deployments and Nodes. Emits control loop metrics.</p>
+</li>
+<li>
+<p><strong>Scheduler</strong><br>
+Assigns unscheduled pods to nodes. Provides insights into scheduling decisions and latency.</p>
+</li>
+<li>
+<p><strong>etcd</strong><br>
+The distributed key-value store backing all cluster data. Emits storage and leader election metrics.</p>
+</li>
+<li>
+<p><strong>kube-state-metrics</strong><br>
+Optional component that exposes the current state of Kubernetes resources such as Pods, Deployments, and Nodes. Focuses on metadata, not resource usage.</p>
+</li>
 </ul>
+
+
+  </div>
+
+  <footer class="post-footer">
+    <ul class="post-tags">
+      <li><a href="http://localhost:1313/tags/metrics/">Metrics</a></li>
+      <li><a href="http://localhost:1313/tags/observability/">Observability</a></li>
+      <li><a href="http://localhost:1313/tags/kubernetes/">Kubernetes</a></li>
+    </ul>
+  </footer>
+</article>
     </main>
     
 <footer class="footer">
