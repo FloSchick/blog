@@ -4,7 +4,7 @@
     <title>Observability on florianschick.com</title>
     <link>http://localhost:1313/tags/observability/</link>
     <description>Recent content in Observability on florianschick.com</description>
-    <generator>Hugo -- 0.145.0</generator>
+    <generator>Hugo -- 0.148.0</generator>
     <language>en</language>
     <lastBuildDate>Mon, 10 Mar 2025 00:00:00 +0000</lastBuildDate>
     <atom:link href="http://localhost:1313/tags/observability/index.xml" rel="self" type="application/rss+xml" />
@@ -13,11 +13,11 @@
       <link>http://localhost:1313/posts/k8smetrics/</link>
       <pubDate>Mon, 10 Mar 2025 00:00:00 +0000</pubDate>
       <guid>http://localhost:1313/posts/k8smetrics/</guid>
-      <description>&lt;h3 id=&#34;intro&#34;&gt;Intro&lt;/h3&gt;
-&lt;p&gt;When setting up observability for Kubernetes, I kept running into the same question again and again:&lt;/p&gt;
+      <description>&lt;h2 id=&#34;intro&#34;&gt;Intro&lt;/h2&gt;
+&lt;p&gt;When setting up Prometheus observability for Kubernetes, I kept running into the same question again and again:&lt;/p&gt;
 &lt;p&gt;&lt;strong&gt;What metrics are actually available and where do they come from?&lt;/strong&gt;&lt;/p&gt;
 &lt;p&gt;This post is my attempt to document all default and optional metric sources in a Kubernetes cluster, grouped by system layer. Also i want to provide a brief overview of each metric type an endpoint exposes.&lt;/p&gt;
-&lt;h3 id=&#34;core-components-recap&#34;&gt;Core Components Recap&lt;/h3&gt;
+&lt;h2 id=&#34;core-components-recap&#34;&gt;Core Components Recap&lt;/h2&gt;
 &lt;p&gt;Before diving into metrics, here’s a quick reminder of some key Kubernetes components that either generate or expose metrics:&lt;/p&gt;</description>
     </item>
   </channel>

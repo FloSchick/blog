@@ -4,6 +4,7 @@ title: florianschick.com
 theme: ["PaperMod"]
 params:
   ShowAllPagesInArchive: true
+  ShowCodeCopyButtons: true
   homeInfoParams:
     Title: "👋 Hi, I´m Flo"
     Content: >

@@ -10,12 +10,12 @@
 <meta name="description" content="Intro
 When setting up Prometheus observability for Kubernetes, I kept running into the same question again and again:
 What metrics are actually available and where do they come from?
-This post is my attempt to document all default and optional metric sources in a Kubernetes cluster, grouped by system layer. Additionally, I want to provide a brief overview of each metric type that an endpoint exposes.
+This post is my attempt to document all default and optional metric sources in a Kubernetes cluster, grouped by system layer. Also i want to provide a brief overview of each metric type an endpoint exposes.
 Core Components Recap
 Before diving into metrics, here’s a quick reminder of some key Kubernetes components that either generate or expose metrics:">
 <meta name="author" content="">
-<link rel="canonical" href="http://localhost:1313/posts/k8smetrics/">
-<link crossorigin="anonymous" href="/assets/css/stylesheet.93f625d739f1d6a5c6f20c146bc6a8d26b233492b34b2220c54b12fd46a04ded.css" integrity="sha256-k/Yl1znx1qXG8gwUa8ao0msjNJKzSyIgxUsS/UagTe0=" rel="preload stylesheet" as="style">
+<link rel="canonical" href="http://localhost:1313/posts/k8smetrics/index.md/">
+<link crossorigin="anonymous" href="/assets/css/stylesheet.f49d66caae9ea0fd43f21f29e71a8d3e284517ed770f2aa86fa012953ad3c9ef.css" integrity="sha256-9J1myq6eoP1D8h8p5xqNPihFF&#43;13Dyqob6ASlTrTye8=" rel="preload stylesheet" as="style">
 <link rel="icon" href="http://localhost:1313/favicon.ico">
 <link rel="icon" type="image/png" sizes="16x16" href="http://localhost:1313/favicon-16x16.png">
 <link rel="icon" type="image/png" sizes="32x32" href="http://localhost:1313/favicon-32x32.png">
@@ -23,7 +23,7 @@ Before diving into metrics, here’s a quick reminder of some key Kubernetes com
 <link rel="mask-icon" href="http://localhost:1313/safari-pinned-tab.svg">
 <meta name="theme-color" content="#2e2e33">
 <meta name="msapplication-TileColor" content="#2e2e33">
-<link rel="alternate" hreflang="en" href="http://localhost:1313/posts/k8smetrics/">
+<link rel="alternate" hreflang="en" href="http://localhost:1313/posts/k8smetrics/index.md/">
 <noscript>
     <style>
         #theme-toggle,
@@ -137,15 +137,7 @@ Before diving into metrics, here’s a quick reminder of some key Kubernetes com
                     <a href="#metrics-by-component" aria-label="Metrics by Component">Metrics by Component</a><ul>
                         
                 <li>
-                    <a href="#kubelet" aria-label="Kubelet">Kubelet</a></li>
-                <li>
-                    <a href="#api-server" aria-label="API-Server">API-Server</a></li>
-                <li>
-                    <a href="#controller-manager" aria-label="Controller Manager">Controller Manager</a></li>
-                <li>
-                    <a href="#scheduler" aria-label="Scheduler">Scheduler</a></li>
-                <li>
-                    <a href="#kube-proxy" aria-label="Kube Proxy">Kube Proxy</a>
+                    <a href="#kubelet" aria-label="kubelet">kubelet</a>
                 </li>
             </ul>
             </li>
@@ -157,7 +149,7 @@ Before diving into metrics, here’s a quick reminder of some key Kubernetes com
   <div class="post-content"><h2 id="intro">Intro<a hidden class="anchor" aria-hidden="true" href="#intro">#</a></h2>
 <p>When setting up Prometheus observability for Kubernetes, I kept running into the same question again and again:</p>
 <p><strong>What metrics are actually available and where do they come from?</strong></p>
-<p>This post is my attempt to document all default and optional metric sources in a Kubernetes cluster, grouped by system layer. Additionally, I want to provide a brief overview of each metric type that an endpoint exposes.</p>
+<p>This post is my attempt to document all default and optional metric sources in a Kubernetes cluster, grouped by system layer. Also i want to provide a brief overview of each metric type an endpoint exposes.</p>
 <h2 id="core-components-recap">Core Components Recap<a hidden class="anchor" aria-hidden="true" href="#core-components-recap">#</a></h2>
 <p>Before diving into metrics, here’s a quick reminder of some key Kubernetes components that either generate or expose metrics:</p>
 <ul>
@@ -182,78 +174,18 @@ Assigns unscheduled pods to nodes. Provides insights into scheduling decisions a
 Maintains network rules on each node to route traffic to services and pods. Exposes metrics related to connection tracking and iptables/ipvs state.</p>
 </li>
 </ul>
-<p>Yes, there is also <strong>etcd</strong> which can export metrics. It&rsquo;s not covered in detail here because in most managed Kubernetes setups, its metrics aren&rsquo;t directly accessible.</p>
+<p>Yes there is also <strong>etcd</strong> wich can export metrics. It&rsquo;s not covered in detail here because in most managed Kubernetes setups, its metrics aren&rsquo;t directly accessible.</p>
 <h2 id="metrics-by-component">Metrics by Component<a hidden class="anchor" aria-hidden="true" href="#metrics-by-component">#</a></h2>
 <p>Now lets dive into each component and what kind of metrics it provides.</p>
-<h3 id="kubelet">Kubelet<a hidden class="anchor" aria-hidden="true" href="#kubelet">#</a></h3>
-<p>Out of all the component metrics, kubelet confused me the most, as it provides multiple endpoints for querying metrics.</p>
-<p><img alt="another kitten" loading="lazy" src="/posts/k8smetrics/kubelet.svg"></p>
-<p>We can start exploring its metrics with <code>kubectl get</code>, which allows us not only to query resources (as most probably know) but also to send plain <strong>GET requests</strong> to the kubelet on each node through the Kubernetes API server.</p>
+<h3 id="kubelet">kubelet<a hidden class="anchor" aria-hidden="true" href="#kubelet">#</a></h3>
+<p>Out of all the components metrics kublet confused me the most, as it provides multiple endpoints for querying metrics.</p>
+<p><img alt="image-test" loading="lazy" src="kubelet.svg"></p>
+<p>We can start exploring its metrics wiht <code>kubeclt get</code> wich allows us, not only as most probably know to query resources, instead we can als to send plain <strong>GET requests</strong> to the kubelet on each node trough the Kubernetes API server.</p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-sh" data-lang="sh"><span style="display:flex;"><span>kubectl get --raw /api/v1/nodes/&lt;node-name&gt;/
 </span></span></code></pre></div><p>This works because Kubernetes API server implements a <strong>reverse proxy</strong> for kubelet endpoints.  Any of the kubelet’s HTTP paths (‑metrics, ‑logs, ‑stats, etc.) must be prefixed with /proxy/ when you go through the API server.</p>
-<p><strong>kubelet: /stats/summary</strong></p>
-<p>First off, lets look at the <code>/stats/summary</code>endpoint of the kubelet, wich emits a structured JSON summary of resource usage for the node itself, each pod on the node and containers inside these pods.</p>
+<p>First off, lets look at the <code>/proxy/stats/summary</code>endpoint of the kubelet, wich emits a structured JSON summary of resource usage for the node itself, each pod on the node and containers inside these pods.</p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-sh" data-lang="sh"><span style="display:flex;"><span>kubectl get --raw /api/v1/nodes/&lt;node-name&gt;/proxy/stats/summary
-</span></span></code></pre></div><p>This endpoint does not provide metrics in a Prometheus-compatible format; however, it was used by early versions of the <a href="https://github.com/kubernetes-sigs/metrics-server">metrics server</a> to gather pod runtime information (now replaced by the more sophisticated /metrics/resource endpoint). However, this can still be useful for debugging and custom tooling.</p>
-<p><strong>kubelet: /metrics</strong></p>
-<p>Now lets look at the first prometheus endpoint of the kubelet. The <code>/metrics</code> endpoint provides a scrape target for the kubelet process itself and provides detailed metrics about the kubelets internal processes, performance and health status.</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-sh" data-lang="sh"><span style="display:flex;"><span>kubectl get --raw /api/v1/nodes/&lt;node-name&gt;/proxy/metrics
-</span></span></code></pre></div><p>Monitoring <code>/metrics</code> is critical for alerting on kubelet failures, debugging performance bottlenecks and understanding control‑plane load.</p>
-<p><strong>kubelet: metrics/cadvisor</strong></p>
-<p>cAdvisor is a container daemon running on each node that provides detailed container runtime statistics. Its metrics can be accessed via kubelet&rsquo;s <code>/metrics/cadvisor</code> endpoint. These metrics focus exclusively on container and host‑hardware stats—not on the kubelet internals or pod‑level aggregations.</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-sh" data-lang="sh"><span style="display:flex;"><span>kubectl get --raw /api/v1/nodes/&lt;node-name&gt;/proxy/metrics/cadvisor
-</span></span></code></pre></div><p>Looking at the result, we can see that cAdvisor exports a broad range of metrics ranging from simple container resource usage, network bandwidth to inode and disk stats.</p>
-<p><strong>kubelet: metrics/resource</strong></p>
-<p>Unlike <code>/metrics/cadvisor</code> (full container stats) or <code>/stats/summary</code> (JSON), <code>/metrics/resource</code> exposes just the core CPU and memory metrics you need for autoscaling and basic <code>top</code> commands. It mainly was introduced in Kubernetes v1.14 to provide a more performant endpoint for autoscalers, as it sits between the cadvisor and the <code>stats/summary</code> endpoint in terms of scope and performance.</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-sh" data-lang="sh"><span style="display:flex;"><span>kubectl get --raw /api/v1/nodes/&lt;node-name&gt;/proxy/metrics/resource
-</span></span></code></pre></div><p><strong>kubelet: metrics/probes</strong></p>
-<p>This final endpoint exposes detailed information about <strong>liveness</strong>, <strong>readiness</strong> and <strong>startup</strong> probes on each container. It provides metrics such as probes success/failure counters as well as latency histograms for each probe.</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-sh" data-lang="sh"><span style="display:flex;"><span>kubectl get --raw /api/v1/nodes/&lt;node-name&gt;/proxy/metrics/probes
-</span></span></code></pre></div><h3 id="api-server">API-Server<a hidden class="anchor" aria-hidden="true" href="#api-server">#</a></h3>
-<p>Our next component is the API-Server itself. It exposes all kinds of metrics related to request latency, volume and error rates for the Kubernetes API itself. It also provides Metrics such as enabled/dasabled K8s features as well as some basic etcd storage metrics. A full list of metrics can be found on the K8s <a href="https://kubernetes.io/docs/reference/instrumentation/metrics/">documentation</a>.</p>
-<p>We can inspect the metrics again with kubectl, however this time as we directly query the API-Server endpoints we do not need no proxy routes.</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-sh" data-lang="sh"><span style="display:flex;"><span>kubectl get --raw /metrics
-</span></span></code></pre></div><h3 id="controller-manager">Controller Manager<a hidden class="anchor" aria-hidden="true" href="#controller-manager">#</a></h3>
-<p>Next is the Controller-Manager. It exposes metrics about how the various control loops are running in the background to reconcile the desired and actual state of the cluster. These include workqueue statistics, error counts, retry rates, and loop durations.</p>
-<p>In most cases, the kube-controller-manager won&rsquo;t expose its metrics endpoint to the HTTP server by default.
-To expose them, you need to configure the endpoint using the <code>--bind-address</code> flag in their config.</p>
-<h3 id="scheduler">Scheduler<a hidden class="anchor" aria-hidden="true" href="#scheduler">#</a></h3>
-<p>Next we have the Scheduler. Its job is to assign unscheduled Pods to suitable nodes based on resource availability, constraints, and policies.</p>
-<p>The metrics it exposes provide insights into:</p>
-<ul>
-<li>
-<p><strong>Scheduling latency</strong><br>
-Understand how long it takes from pod creation to assignment.</p>
-</li>
-<li>
-<p><strong>Scheduling attempts and failures</strong><br>
-Useful for debugging why pods can’t be placed (e.g., due to taints, node selectors, or resource pressure).</p>
-</li>
-<li>
-<p><strong>Queue metrics</strong><br>
-Track how many pods are waiting to be scheduled.</p>
-</li>
-</ul>
-<p>These metrics are especially useful when diagnosing performance issues in large or busy clusters. You can find the full list in the Kubernetes <a href="https://kubernetes.io/docs/reference/instrumentation/metrics/">documentation</a>.</p>
-<p>Like the controller manager, the scheduler is a separate control-plane process or a static pod which must be configured using the <code>--bind-address</code> flag.</p>
-<h3 id="kube-proxy">Kube Proxy<a hidden class="anchor" aria-hidden="true" href="#kube-proxy">#</a></h3>
-<p>Finally, we have kube-proxy. It runs on each node and is responsible for maintaining the network rules that allow communication between Services and Pods, using iptables.</p>
-<p>The metrics it exposes help track:</p>
-<ul>
-<li>
-<p><strong>Connection tracking stats</strong><br>
-Useful for diagnosing NAT or conntrack table saturation.</p>
-</li>
-<li>
-<p><strong>Iptables/IPVS sync performance</strong><br>
-Helps detect delays or failures in updating network rules.</p>
-</li>
-<li>
-<p><strong>Service and endpoint metrics</strong><br>
-Shows how many services and endpoints are being handled on the node.</p>
-</li>
-</ul>
-<p>These metrics are particularly helpful when debugging networking issues or service routing behavior. As with other node-level components, kube-proxy runs as a separate Pod or daemon, and you need to access its metrics directly on the Pod.</p>
+</span></span></code></pre></div><p>This endpoint does not provide metrics in a Prometheus compatible format, however it was used by early version of the <a href="https://github.com/kubernetes-sigs/metrics-server">metrics server</a> to gather pod runtime information (Now replaced by the more sophisticaded /metrics/resource endpoint). However this can still be usefull for debugging and custom tooling.</p>
 
 
   </div>
