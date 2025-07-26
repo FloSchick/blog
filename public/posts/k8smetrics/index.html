@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="en" dir="auto">
+
+<head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script><meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<meta name="robots" content="noindex, nofollow">
+<title>Demystifying Kubernetes Metrics | florianschick.com</title>
+<meta name="keywords" content="Metrics, Observability, Kubernetes">
+<meta name="description" content="Intro
+When setting up Prometheus observability for Kubernetes, I kept running into the same question again and again:
+What metrics are actually available and where do they come from?
+This post is my attempt to document all default and optional metric sources in a Kubernetes cluster, grouped by system layer. Additionally, I want to provide a brief overview of each metric type that an endpoint exposes.
+Core Components Recap
+Before diving into metrics, here’s a quick reminder of some key Kubernetes components that either generate or expose metrics:">
+<meta name="author" content="">
+<link rel="canonical" href="http://localhost:1313/posts/k8smetrics/">
+<link crossorigin="anonymous" href="/assets/css/stylesheet.93f625d739f1d6a5c6f20c146bc6a8d26b233492b34b2220c54b12fd46a04ded.css" integrity="sha256-k/Yl1znx1qXG8gwUa8ao0msjNJKzSyIgxUsS/UagTe0=" rel="preload stylesheet" as="style">
+<link rel="icon" href="http://localhost:1313/favicon.ico">
+<link rel="icon" type="image/png" sizes="16x16" href="http://localhost:1313/favicon-16x16.png">
+<link rel="icon" type="image/png" sizes="32x32" href="http://localhost:1313/favicon-32x32.png">
+<link rel="apple-touch-icon" href="http://localhost:1313/apple-touch-icon.png">
+<link rel="mask-icon" href="http://localhost:1313/safari-pinned-tab.svg">
+<meta name="theme-color" content="#2e2e33">
+<meta name="msapplication-TileColor" content="#2e2e33">
+<link rel="alternate" hreflang="en" href="http://localhost:1313/posts/k8smetrics/">
+<noscript>
+    <style>
+        #theme-toggle,
+        .top-link {
+            display: none;
+        }
+
+    </style>
+    <style>
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --theme: rgb(29, 30, 32);
+                --entry: rgb(46, 46, 51);
+                --primary: rgb(218, 218, 219);
+                --secondary: rgb(155, 156, 157);
+                --tertiary: rgb(65, 66, 68);
+                --content: rgb(196, 196, 197);
+                --code-block-bg: rgb(46, 46, 51);
+                --code-bg: rgb(55, 56, 62);
+                --border: rgb(51, 51, 51);
+            }
+
+            .list {
+                background: var(--theme);
+            }
+
+            .list:not(.dark)::-webkit-scrollbar-track {
+                background: 0 0;
+            }
+
+            .list:not(.dark)::-webkit-scrollbar-thumb {
+                border-color: var(--theme);
+            }
+        }
+
+    </style>
+</noscript>
+</head>
+
+<body class="" id="top">
+<script>
+    if (localStorage.getItem("pref-theme") === "dark") {
+        document.body.classList.add('dark');
+    } else if (localStorage.getItem("pref-theme") === "light") {
+        document.body.classList.remove('dark')
+    } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        document.body.classList.add('dark');
+    }
+
+</script>
+
+<header class="header">
+    <nav class="nav">
+        <div class="logo">
+            <a href="http://localhost:1313/" accesskey="h" title="florianschick.com (Alt + H)">florianschick.com</a>
+            <div class="logo-switches">
+                <button id="theme-toggle" accesskey="t" title="(Alt + T)" aria-label="Toggle theme">
+                    <svg id="moon" xmlns="http://www.w3.org/2000/svg" width="24" height="18" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                    </svg>
+                    <svg id="sun" xmlns="http://www.w3.org/2000/svg" width="24" height="18" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="5"></circle>
+                        <line x1="12" y1="1" x2="12" y2="3"></line>
+                        <line x1="12" y1="21" x2="12" y2="23"></line>
+                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                        <line x1="1" y1="12" x2="3" y2="12"></line>
+                        <line x1="21" y1="12" x2="23" y2="12"></line>
+                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                    </svg>
+                </button>
+            </div>
+        </div>
+        <ul id="menu">
+            <li>
+                <a href="http://localhost:1313/tags/" title="Tags">
+                    <span>Tags</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+</header>
+<main class="main">
+
+<article class="post-single">
+  <header class="post-header">
+    
+    <h1 class="post-title entry-hint-parent">
+      Demystifying Kubernetes Metrics
+    </h1>
+    <div class="post-meta"><span title='2025-03-10 00:00:00 +0000 UTC'>March 10, 2025</span>
+
+</div>
+  </header> <div class="toc">
+    <details  open>
+        <summary accesskey="c" title="(Alt + C)">
+            <span class="details">Table of Contents</span>
+        </summary>
+
+        <div class="inner"><ul>
+                <li>
+                    <a href="#intro" aria-label="Intro">Intro</a></li>
+                <li>
+                    <a href="#core-components-recap" aria-label="Core Components Recap">Core Components Recap</a></li>
+                <li>
+                    <a href="#metrics-by-component" aria-label="Metrics by Component">Metrics by Component</a><ul>
+                        
+                <li>
+                    <a href="#kubelet" aria-label="Kubelet">Kubelet</a></li>
+                <li>
+                    <a href="#api-server" aria-label="API-Server">API-Server</a></li>
+                <li>
+                    <a href="#controller-manager" aria-label="Controller Manager">Controller Manager</a></li>
+                <li>
+                    <a href="#scheduler" aria-label="Scheduler">Scheduler</a></li>
+                <li>
+                    <a href="#kube-proxy" aria-label="Kube Proxy">Kube Proxy</a>
+                </li>
+            </ul>
+            </li>
+            </ul>
+        </div>
+    </details>
+</div>
+
+  <div class="post-content"><h2 id="intro">Intro<a hidden class="anchor" aria-hidden="true" href="#intro">#</a></h2>
+<p>When setting up Prometheus observability for Kubernetes, I kept running into the same question again and again:</p>
+<p><strong>What metrics are actually available and where do they come from?</strong></p>
+<p>This post is my attempt to document all default and optional metric sources in a Kubernetes cluster, grouped by system layer. Additionally, I want to provide a brief overview of each metric type that an endpoint exposes.</p>
+<h2 id="core-components-recap">Core Components Recap<a hidden class="anchor" aria-hidden="true" href="#core-components-recap">#</a></h2>
+<p>Before diving into metrics, here’s a quick reminder of some key Kubernetes components that either generate or expose metrics:</p>
+<ul>
+<li>
+<p><strong>Kubelet</strong><br>
+Runs on every node. Manages pods and containers. Exposes various metrics including resource usage and probe status.</p>
+</li>
+<li>
+<p><strong>API Server</strong><br>
+Central access point for all Kubernetes operations. Tracks requests, authentication, and cluster object interactions.</p>
+</li>
+<li>
+<p><strong>Controller Manager</strong><br>
+Reconciles the desired and actual state of cluster resources like Deployments and Nodes. Emits control loop metrics.</p>
+</li>
+<li>
+<p><strong>Scheduler</strong><br>
+Assigns unscheduled pods to nodes. Provides insights into scheduling decisions and latency.</p>
+</li>
+<li>
+<p><strong>kube-proxy</strong><br>
+Maintains network rules on each node to route traffic to services and pods. Exposes metrics related to connection tracking and iptables/ipvs state.</p>
+</li>
+</ul>
+<p>Yes, there is also <strong>etcd</strong> which can export metrics. It&rsquo;s not covered in detail here because in most managed Kubernetes setups, its metrics aren&rsquo;t directly accessible.</p>
+<h2 id="metrics-by-component">Metrics by Component<a hidden class="anchor" aria-hidden="true" href="#metrics-by-component">#</a></h2>
+<p>Now lets dive into each component and what kind of metrics it provides.</p>
+<h3 id="kubelet">Kubelet<a hidden class="anchor" aria-hidden="true" href="#kubelet">#</a></h3>
+<p>Out of all the component metrics, kubelet confused me the most, as it provides multiple endpoints for querying metrics.</p>
+<p><img alt="another kitten" loading="lazy" src="/posts/k8smetrics/kubelet.svg"></p>
+<p>We can start exploring its metrics with <code>kubectl get</code>, which allows us not only to query resources (as most probably know) but also to send plain <strong>GET requests</strong> to the kubelet on each node through the Kubernetes API server.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-sh" data-lang="sh"><span style="display:flex;"><span>kubectl get --raw /api/v1/nodes/&lt;node-name&gt;/
+</span></span></code></pre></div><p>This works because Kubernetes API server implements a <strong>reverse proxy</strong> for kubelet endpoints.  Any of the kubelet’s HTTP paths (‑metrics, ‑logs, ‑stats, etc.) must be prefixed with /proxy/ when you go through the API server.</p>
+<p><strong>kubelet: /stats/summary</strong></p>
+<p>First off, lets look at the <code>/stats/summary</code>endpoint of the kubelet, wich emits a structured JSON summary of resource usage for the node itself, each pod on the node and containers inside these pods.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-sh" data-lang="sh"><span style="display:flex;"><span>kubectl get --raw /api/v1/nodes/&lt;node-name&gt;/proxy/stats/summary
+</span></span></code></pre></div><p>This endpoint does not provide metrics in a Prometheus-compatible format; however, it was used by early versions of the <a href="https://github.com/kubernetes-sigs/metrics-server">metrics server</a> to gather pod runtime information (now replaced by the more sophisticated /metrics/resource endpoint). However, this can still be useful for debugging and custom tooling.</p>
+<p><strong>kubelet: /metrics</strong></p>
+<p>Now lets look at the first prometheus endpoint of the kubelet. The <code>/metrics</code> endpoint provides a scrape target for the kubelet process itself and provides detailed metrics about the kubelets internal processes, performance and health status.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-sh" data-lang="sh"><span style="display:flex;"><span>kubectl get --raw /api/v1/nodes/&lt;node-name&gt;/proxy/metrics
+</span></span></code></pre></div><p>Monitoring <code>/metrics</code> is critical for alerting on kubelet failures, debugging performance bottlenecks and understanding control‑plane load.</p>
+<p><strong>kubelet: metrics/cadvisor</strong></p>
+<p>cAdvisor is a container daemon running on each node that provides detailed container runtime statistics. Its metrics can be accessed via kubelet&rsquo;s <code>/metrics/cadvisor</code> endpoint. These metrics focus exclusively on container and host‑hardware stats—not on the kubelet internals or pod‑level aggregations.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-sh" data-lang="sh"><span style="display:flex;"><span>kubectl get --raw /api/v1/nodes/&lt;node-name&gt;/proxy/metrics/cadvisor
+</span></span></code></pre></div><p>Looking at the result, we can see that cAdvisor exports a broad range of metrics ranging from simple container resource usage, network bandwidth to inode and disk stats.</p>
+<p><strong>kubelet: metrics/resource</strong></p>
+<p>Unlike <code>/metrics/cadvisor</code> (full container stats) or <code>/stats/summary</code> (JSON), <code>/metrics/resource</code> exposes just the core CPU and memory metrics you need for autoscaling and basic <code>top</code> commands. It mainly was introduced in Kubernetes v1.14 to provide a more performant endpoint for autoscalers, as it sits between the cadvisor and the <code>stats/summary</code> endpoint in terms of scope and performance.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-sh" data-lang="sh"><span style="display:flex;"><span>kubectl get --raw /api/v1/nodes/&lt;node-name&gt;/proxy/metrics/resource
+</span></span></code></pre></div><p><strong>kubelet: metrics/probes</strong></p>
+<p>This final endpoint exposes detailed information about <strong>liveness</strong>, <strong>readiness</strong> and <strong>startup</strong> probes on each container. It provides metrics such as probes success/failure counters as well as latency histograms for each probe.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-sh" data-lang="sh"><span style="display:flex;"><span>kubectl get --raw /api/v1/nodes/&lt;node-name&gt;/proxy/metrics/probes
+</span></span></code></pre></div><h3 id="api-server">API-Server<a hidden class="anchor" aria-hidden="true" href="#api-server">#</a></h3>
+<p>Our next component is the API-Server itself. It exposes all kinds of metrics related to request latency, volume and error rates for the Kubernetes API itself. It also provides Metrics such as enabled/dasabled K8s features as well as some basic etcd storage metrics. A full list of metrics can be found on the K8s <a href="https://kubernetes.io/docs/reference/instrumentation/metrics/">documentation</a>.</p>
+<p>We can inspect the metrics again with kubectl, however this time as we directly query the API-Server endpoints we do not need no proxy routes.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-sh" data-lang="sh"><span style="display:flex;"><span>kubectl get --raw /metrics
+</span></span></code></pre></div><h3 id="controller-manager">Controller Manager<a hidden class="anchor" aria-hidden="true" href="#controller-manager">#</a></h3>
+<p>Next is the Controller-Manager. It exposes metrics about how the various control loops are running in the background to reconcile the desired and actual state of the cluster. These include workqueue statistics, error counts, retry rates, and loop durations.</p>
+<p>In most cases, the kube-controller-manager won&rsquo;t expose its metrics endpoint to the HTTP server by default.
+To expose them, you need to configure the endpoint using the <code>--bind-address</code> flag in their config.</p>
+<h3 id="scheduler">Scheduler<a hidden class="anchor" aria-hidden="true" href="#scheduler">#</a></h3>
+<p>Next we have the Scheduler. Its job is to assign unscheduled Pods to suitable nodes based on resource availability, constraints, and policies.</p>
+<p>The metrics it exposes provide insights into:</p>
+<ul>
+<li>
+<p><strong>Scheduling latency</strong><br>
+Understand how long it takes from pod creation to assignment.</p>
+</li>
+<li>
+<p><strong>Scheduling attempts and failures</strong><br>
+Useful for debugging why pods can’t be placed (e.g., due to taints, node selectors, or resource pressure).</p>
+</li>
+<li>
+<p><strong>Queue metrics</strong><br>
+Track how many pods are waiting to be scheduled.</p>
+</li>
+</ul>
+<p>These metrics are especially useful when diagnosing performance issues in large or busy clusters. You can find the full list in the Kubernetes <a href="https://kubernetes.io/docs/reference/instrumentation/metrics/">documentation</a>.</p>
+<p>Like the controller manager, the scheduler is a separate control-plane process or a static pod which must be configured using the <code>--bind-address</code> flag.</p>
+<h3 id="kube-proxy">Kube Proxy<a hidden class="anchor" aria-hidden="true" href="#kube-proxy">#</a></h3>
+<p>Finally, we have kube-proxy. It runs on each node and is responsible for maintaining the network rules that allow communication between Services and Pods, using iptables.</p>
+<p>The metrics it exposes help track:</p>
+<ul>
+<li>
+<p><strong>Connection tracking stats</strong><br>
+Useful for diagnosing NAT or conntrack table saturation.</p>
+</li>
+<li>
+<p><strong>Iptables/IPVS sync performance</strong><br>
+Helps detect delays or failures in updating network rules.</p>
+</li>
+<li>
+<p><strong>Service and endpoint metrics</strong><br>
+Shows how many services and endpoints are being handled on the node.</p>
+</li>
+</ul>
+<p>These metrics are particularly helpful when debugging networking issues or service routing behavior. As with other node-level components, kube-proxy runs as a separate Pod or daemon, and you need to access its metrics directly on the Pod.</p>
+
+
+  </div>
+
+  <footer class="post-footer">
+    <ul class="post-tags">
+      <li><a href="http://localhost:1313/tags/metrics/">Metrics</a></li>
+      <li><a href="http://localhost:1313/tags/observability/">Observability</a></li>
+      <li><a href="http://localhost:1313/tags/kubernetes/">Kubernetes</a></li>
+    </ul>
+  </footer>
+</article>
+    </main>
+    
+<footer class="footer">
+    <span>&copy; 2025 <a href="http://localhost:1313/">florianschick.com</a></span>
+</footer>
+<a href="#top" aria-label="go to top" title="Go to Top (Alt + G)" class="top-link" id="top-link" accesskey="g">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 12 6" fill="currentColor">
+        <path d="M12 6H0l6-6z" />
+    </svg>
+</a>
+
+<script>
+    let menu = document.getElementById('menu')
+    if (menu) {
+        menu.scrollLeft = localStorage.getItem("menu-scroll-position");
+        menu.onscroll = function () {
+            localStorage.setItem("menu-scroll-position", menu.scrollLeft);
+        }
+    }
+
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener("click", function (e) {
+            e.preventDefault();
+            var id = this.getAttribute("href").substr(1);
+            if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView({
+                    behavior: "smooth"
+                });
+            } else {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView();
+            }
+            if (id === "top") {
+                history.replaceState(null, null, " ");
+            } else {
+                history.pushState(null, null, `#${id}`);
+            }
+        });
+    });
+
+</script>
+<script>
+    var mybutton = document.getElementById("top-link");
+    window.onscroll = function () {
+        if (document.body.scrollTop > 800 || document.documentElement.scrollTop > 800) {
+            mybutton.style.visibility = "visible";
+            mybutton.style.opacity = "1";
+        } else {
+            mybutton.style.visibility = "hidden";
+            mybutton.style.opacity = "0";
+        }
+    };
+
+</script>
+<script>
+    document.getElementById("theme-toggle").addEventListener("click", () => {
+        if (document.body.className.includes("dark")) {
+            document.body.classList.remove('dark');
+            localStorage.setItem("pref-theme", 'light');
+        } else {
+            document.body.classList.add('dark');
+            localStorage.setItem("pref-theme", 'dark');
+        }
+    })
+
+</script>
+<script>
+    document.querySelectorAll('pre > code').forEach((codeblock) => {
+        const container = codeblock.parentNode.parentNode;
+
+        const copybutton = document.createElement('button');
+        copybutton.classList.add('copy-code');
+        copybutton.innerHTML = 'copy';
+
+        function copyingDone() {
+            copybutton.innerHTML = 'copied!';
+            setTimeout(() => {
+                copybutton.innerHTML = 'copy';
+            }, 2000);
+        }
+
+        copybutton.addEventListener('click', (cb) => {
+            if ('clipboard' in navigator) {
+                navigator.clipboard.writeText(codeblock.textContent);
+                copyingDone();
+                return;
+            }
+
+            const range = document.createRange();
+            range.selectNodeContents(codeblock);
+            const selection = window.getSelection();
+            selection.removeAllRanges();
+            selection.addRange(range);
+            try {
+                document.execCommand('copy');
+                copyingDone();
+            } catch (e) { };
+            selection.removeRange(range);
+        });
+
+        if (container.classList.contains("highlight")) {
+            container.appendChild(copybutton);
+        } else if (container.parentNode.firstChild == container) {
+            
+        } else if (codeblock.parentNode.parentNode.parentNode.parentNode.parentNode.nodeName == "TABLE") {
+            
+            codeblock.parentNode.parentNode.parentNode.parentNode.parentNode.appendChild(copybutton);
+        } else {
+            
+            codeblock.parentNode.appendChild(copybutton);
+        }
+    });
+</script></body>
+
+</html>
