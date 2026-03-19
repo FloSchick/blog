@@ -3,6 +3,8 @@ languageCode: en-us
 title: florianschick.com
 theme: ["PaperMod"]
 params:
+  author:
+    name: Florian Schick
   ShowAllPagesInArchive: true
   ShowCodeCopyButtons: true
   homeInfoParams:
@@ -43,6 +45,12 @@ languages:
         - name: Tags
           url: tags/
           weight: 10
+
+outputs:
+  taxonomy:
+    - HTML
+  term:
+    - HTML
 
 caches:
   images:
