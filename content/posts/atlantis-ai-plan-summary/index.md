@@ -1,7 +1,6 @@
 ---
 title: "Adding an AI Plan Summary to Terraform PRs"
 date: "2026-04-30"
-draft: true
 tags: ["Terraform", "Atlantis", "AI", "Mistral", "Claude", "Grafana", "Observability", "Platform Engineering"]
 ShowToc: true
 TocOpen: true
