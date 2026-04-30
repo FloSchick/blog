@@ -3,8 +3,7 @@ languageCode: en-us
 title: florianschick.com
 theme: ["PaperMod"]
 params:
-  author:
-    name: Florian Schick
+  author: Florian Schick
   ShowAllPagesInArchive: true
   ShowCodeCopyButtons: true
   homeInfoParams:
